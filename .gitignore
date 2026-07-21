@@ -1,5 +1,6 @@
 # Pastas de Ferramentas e Documentação Pessoal
-docs/
+docs/*
+!docs/wireframe_final.png
 .vscode/
 
 # Miscellaneous
