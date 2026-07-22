@@ -30,11 +30,12 @@ class DatabaseHelper {
     await db.execute('PRAGMA foreign_keys = ON');
   }
 
-  // Definição das Tabelas
+// Definição das Tabelas
   Future<void> _createDB(Database db, int version) async {
     const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
     const textType = 'TEXT NOT NULL';
-    const realType = 'REAL NOT NULL';
+    const textTypeNullable = 'TEXT';
+    const realTypeNullable = 'REAL';
     const intType = 'INTEGER NOT NULL';
 
     // 1. Tabela de Usuários
@@ -46,19 +47,20 @@ class DatabaseHelper {
       )
     ''');
 
-    // 2. Tabela de Experiências (com Foreign Key ligando ao Usuario)
+    // 2. Tabela de Experiências
     await db.execute('''
       CREATE TABLE experiencias (
         id $idType,
+        usuarioId $intType,
         nomeRestaurante $textType,
         tipoCulinaria $textType,
         pratoPrincipal $textType,
         recomendacao $textType,
         ranking $intType,
-        latitude $realType,
-        longitude $realType,
-        caminhoFoto $textType,
-        usuarioId $intType,
+        caminhoFoto $textTypeNullable,
+        latitude $realTypeNullable,
+        longitude $realTypeNullable,
+        cidadeUf $textTypeNullable,
         FOREIGN KEY (usuarioId) REFERENCES usuarios (id) ON DELETE CASCADE
       )
     ''');
