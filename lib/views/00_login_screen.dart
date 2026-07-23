@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Logo do ComaBem
                   Image.asset(
                     'assets/images/logo.png',
-                    height: 120,
+                    height: 160,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.restaurant_menu,
