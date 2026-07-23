@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "com.example.coma_bem"
-    compileSdk = flutter.compileSdkVersion
+    // Atualizado para 36 para atender plugins como image_picker, sqflite e geolocator
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -20,7 +21,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

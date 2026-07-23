@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 class ExperienciaController {
   final ImagePicker _picker = ImagePicker();
+  final Geocoding _geocoding = Geocoding();
 
   // Salva uma nova experiência no SQLite
   Future<int> salvarExperiencia(Experiencia experiencia) async {
@@ -16,6 +17,7 @@ class ExperienciaController {
   // Busca apenas as experiências do usuário logado
   Future<List<Experiencia>> buscarPorUsuario(int usuarioId) async {
     final db = await DatabaseHelper.instance.database;
+
     final result = await db.query(
       'experiencias',
       where: 'usuarioId = ?',
@@ -29,6 +31,7 @@ class ExperienciaController {
   // Exclui uma experiência pelo ID
   Future<int> deletarExperiencia(int id) async {
     final db = await DatabaseHelper.instance.database;
+
     return await db.delete(
       'experiencias',
       where: 'id = ?',
@@ -42,50 +45,65 @@ class ExperienciaController {
       source: daGaleria ? ImageSource.gallery : ImageSource.camera,
       imageQuality: 80,
     );
+
     return photo?.path;
   }
 
-  // Captura a localização via GPS e formata a Cidade/UF (ex: "Curitiba, PR")
+  // Captura localização GPS e retorna latitude, longitude e Cidade/UF
   Future<Map<String, dynamic>> capturarLocalizacaoGPS() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
     if (!serviceEnabled) {
       throw Exception('Serviço de localização desativado.');
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
+
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
+
       if (permission == LocationPermission.denied) {
         throw Exception('Permissão de localização negada.');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      throw Exception('Permissões de localização permanentemente negadas.');
+      throw Exception(
+        'Permissões de localização permanentemente negadas.',
+      );
     }
 
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
     );
 
     String cidadeUf = "Localização Capturada";
 
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(
+      final List<Placemark> placemarks =
+      await _geocoding.placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
 
       if (placemarks.isNotEmpty) {
-        Placemark place = placemarks.first;
-        String cidade = place.subAdministrativeArea ?? place.locality ?? '';
-        String estado = place.administrativeArea ?? '';
+        final Placemark place = placemarks.first;
+
+        final String cidade =
+            place.subAdministrativeArea ?? place.locality ?? '';
+
+        final String estado =
+            place.administrativeArea ?? '';
+
         if (cidade.isNotEmpty && estado.isNotEmpty) {
           cidadeUf = "$cidade, $estado";
         }
       }
-    } catch (_) {
-      // Se a conversão de endereço falhar, mantém as coordenadas puras
+    } catch (e) {
+      // Mantém o valor padrão caso não seja possível converter
+      // as coordenadas para Cidade/UF.
     }
 
     return {
